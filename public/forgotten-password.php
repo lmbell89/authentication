@@ -33,6 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="card-body">
                 <h2>Forgotten Password?</h2>
                 
+                <?php echo flash(); ?>
+
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
 
                     <p>Enter your email address to reset your password.</p>
