@@ -3,7 +3,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require_once '../../../vendor/autoload.php';
+require_once '../../vendor/autoload.php';
 
 // used to append the password reset link to
 define('EXTERNAL_BASE_URL', 'https://liambell.info');
@@ -38,6 +38,16 @@ $mail->Username = SMTP_USERNAME;
 $mail->Password = SMTP_PASSWORD;
 $mail->SMTPSecure = SMTP_ENCRYPTION;
 $mail->Port = SMTP_PORT;   
+
+function handle_errors($error_number, $error_string) {
+    echo "
+        <script type='text/javascript'>
+            console.log('Error [$error_number]: $error_string');
+        </script>
+    ";
+}
+
+set_error_handler("handle_errors");
 
 try{
     $pdo = new PDO("mysql:host=" . DB_SERVER . ";dbname=" . DB_NAME, DB_USERNAME, DB_PASSWORD);

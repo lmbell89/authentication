@@ -1,11 +1,21 @@
 <?php
-require_once '../config/config.php';
+require_once '../config/config.test.php';
 
-function password_error() {
-    $msg = "Passwords must be at least 8 characters long";
-    $msg .= " and contain a mix of uppercase, lowercase, numbers and symbols.";
-    return $msg;
+function flash(): string {
+    $flash = null;
+
+    if (isset($_SESSION["flash"])) {
+        list($message, $variant) = $_SESSION["flash"];
+        $color = empty($variant) ? "" : "alert-$variant";
+        $flash = "<div class='alert $color' role='alert'>$message</div>";        
+	}
+
+    unset($_SESSION["flash"]); 
+    return $flash ?? "";
 }
+
+$invalid_password_msg = "Passwords must be at least 8 characters long
+     and contain a mix of uppercase, lowercase, numbers and symbols.";
 
 function is_password_valid(
     $password, 
@@ -100,6 +110,7 @@ function login($user_id, $user_email): void {
 
 
 function is_password_correct($username, $password): bool {
+    global $pdo;
     $sql = "SELECT password FROM users WHERE username = :username";
 
     $stmt = $pdo->prepare($sql);
@@ -139,15 +150,7 @@ function facebook_sign_in($access_token): void {
         'default_graph_version' => 'v8.0',
     ]);
 
-    try {
-        $response = $fb->get('/me?fields=email', $access_token);
-    } catch(FacebookExceptionsFacebookResponseException $e) {
-        echo 'Graph returned an error: ' . $e->getMessage();
-        exit;
-    } catch(FacebookExceptionsFacebookSDKException $e) {
-        echo 'Facebook SDK returned an error: ' . $e->getMessage();
-        exit;
-    }
+    $response = $fb->get('/me?fields=email', $access_token);
 
     $graphNode = $response->getGraphNode();
 
@@ -230,32 +233,36 @@ function send_password_reset($username): void {
 }
 
 
-function set_password($user_id, $password): void {
+function set_password($username, $password): void {
     global $pdo;
-    $sql = "UPDATE users SET password = :hash WHERE id = :id";
+    $sql = "UPDATE users 
+        SET password = :hash, reset_token = null, token_expiry = null 
+        WHERE username = :username";
 
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
     $stmt = $pdo->prepare($sql);
 
     $stmt->bindParam(":hash", $hash, PDO::PARAM_STR);
-    $stmt->bindParam(":id", $user_id, PDO::PARAM_STR);
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR);
 
     if(!$stmt->execute()){
         throw new Exception("Failed to set password");
-	}
+    }
 }
 
-function flash($options): string {
-    list($message, $variant) = $options;
+function is_reset_token_valid($token): bool {
+    global $pdo;
+    $sql = "SELECT id, token_expiry FROM users WHERE reset_token = :token";
 
-    if (isset($_SESSION["flash"])) {
-        $color = empty($variant) ? "" : "alert-$variant";
-        $flash = "<div class='alert $color' role='alert'>$message</div>";
-        unset($_SESSION["flash"]); 
-	}
+    $stmt = $pdo->prepare($sql);
 
-    return $flash ?? "";
+    $stmt->bindParam(":token", $token, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $valid = ($row === null || $row["token_expiry"] > time());
+    return $valid;
 }
 
 ?>

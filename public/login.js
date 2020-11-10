@@ -1,5 +1,5 @@
-var facebookAppId = '999999999999999';
-var googleClientId = '000000000000-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com'
+var facebookAppId = '532649330950584';
+var googleClientId = '457590547778-hck4psc1cr0637g26h4bdehmklluju6o.apps.googleusercontent.com';
 
 var googleUser = {};
 
@@ -24,7 +24,7 @@ function signOut() {
             var auth2 = gapi.auth2.getAuthInstance();
             auth2.signOut().then(() => {
                 auth2.disconnect();
-                window.location.pathname = 'authentication/public/logout.php';
+                window.location.pathname = 'logout.php';
             });
             
         });

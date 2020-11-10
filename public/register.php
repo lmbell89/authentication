@@ -1,53 +1,36 @@
 <?php
 require "../src/functions.php";
 
-$username = $password = $confirm_password = "";
+$username = "";
 $username_err = $password_err = $confirm_password_err = "";
  
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
- 
-    if (!filter_var(trim($_POST["username"]), FILTER_VALIDATE_EMAIL)) {
+    $username = trim($_POST["username"]);
+    $password = trim($_POST["password"]);
+    $confirm_password = trim($_POST["confirm_password"]);
+
+    if (!filter_var($username, FILTER_VALIDATE_EMAIL)) {
         $username_err = "Please enter a valid email.";   
-    } else {
-        try {
-            $existing_id = get_user_id(trim($_POST["username"]));
-            if ($existing_id) {
-                $username_err = "That email address is already in use.";
-			} else {
-                $username = trim($_POST["username"]);     
-			}
-		} catch (Exception $e) {
-            echo $e;
-		}
+    } elseif (get_user_id($username)) {
+        $username_err = "That email address is already in use.";
     }
 
-    if (trim($_POST["password"]) !== trim($_POST["confirm_password"])) {
+    if ($password !== $confirm_password) {
         $password_err = "Passwords do not match";
 	}
     
-    // Validate password
-    if(empty(trim($_POST["password"]))){
-        $password_err = "Please enter a password.";     
-    } elseif ( !is_password_valid(trim($_POST["password"])) ) {
-        $password_err = password_error();
-    } else {
-        $password = trim($_POST["password"]);
-	}
-    
-    // Validate confirm password
-    if(empty(trim($_POST["confirm_password"]))){
-        $password_err = "Please enter a password.";     
-    } elseif ( !is_password_valid(trim($_POST["confirm_password"])) ) {
-        $password_err = password_error();
+    if (!is_password_valid($password)) {
+        $password_err = $invalid_password_msg;
+    }
+
+    if (!is_password_valid($confirm_password)) {
+        $confirm_password_err = $invalid_password_msg;
     }
 
     if(empty($username_err) && empty($password_err) && empty($confirm_password_err)){
-        try {
-            create_user($username, $password);
-            header("Location: login.php");
-		} catch (Exception $e) {
-            echo $e;  
-		}
+        create_user($username, $password);
+        header("Location: login.php");
+        exit;
     }
 }
 ?>
@@ -71,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input 
                             type="text" 
                             name="username" 
-                            class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>"
+                            class="form-control <?php echo ($username_err) ? 'is-invalid' : ''; ?>"
                             value="<?php echo $username; ?>"
                         >
                         <div class="invalid-feedback">
@@ -83,8 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input 
                             type="password" 
                             name="password" 
-                            class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>"
-                            value="<?php echo $password; ?>"
+                            class="form-control <?php echo ($password_err) ? 'is-invalid' : ''; ?>"
                         >
                         <div class="invalid-feedback">
                             <?php echo $password_err; ?>
@@ -95,18 +77,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input 
                             type="password" 
                             name="confirm_password" 
-                            class="form-control <?php echo (!empty($confirm_password_err)) ? 'is-invalid' : ''; ?>"
-                            value="<?php echo $confirm_password; ?>"
+                            class="form-control <?php echo ($confirm_password_err) ? 'is-invalid' : ''; ?>"
                         >
                         <div class="invalid-feedback">
                             <?php echo $confirm_password_err; ?>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <input type="submit" class="btn btn-primary" value="Submit">
-                        <input type="reset" class="btn btn-default" value="Reset">
-                    </div>
-                    <p>Already have an account? <a href="login.php">Login here</a>.</p>
+
+                    <input type="submit" class="btn btn-primary btn-block mb-3" value="Submit">
+
+                    <p>Already have an account? <a href="login.php">Login here</a></p>
                 </form>
             </div>
         </div>

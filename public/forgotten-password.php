@@ -1,23 +1,22 @@
 <?php
+session_start();
 require "../src/functions.php";
 
-session_start();
+$username = $username_err = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST["username"])) {
-        $id = get_user_id(trim($_POST["username"]));
+    $username = trim($_POST["username"]);
 
-        if (empty($id)) {
-            $_SESSION["flash"] = ["Account not found", "danger"];  
-		} else {
-            send_password_reset(trim($_POST["username"]));            
-            $_SESSION["flash"] = ["Password reset link sent!", "success"];
-
-            // use PRG pattern to prevent unnecessary emails
-            header("location:" . $_SERVER["REQUEST_URI"], true, 303);
-            exit;
-		}        
-	}
+    if (!filter_var($username, FILTER_VALIDATE_EMAIL)) {
+        $username_err = "Email address is not valid.";
+    } elseif (empty(get_user_id($username))) {
+        $username_err = "Account not found.";  
+	} else {
+        send_password_reset($username);            
+        $_SESSION["flash"] = ["Password reset link sent!", "success"];
+        header("location:" . $_SERVER["REQUEST_URI"], true, 303); //PRG
+        exit;
+	}    
 }
 ?>
 
@@ -32,16 +31,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="col-10 col-sm-8 col-md-6 col-lg-4 mx-auto mt-5">
         <div class="card">
             <div class="card-body">
-                <h2>Forgotten Password?</h2>        
+                <h2>Forgotten Password?</h2>
+                
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-                    <?php echo flash("success");?>
+
                     <p>Enter your email address to reset your password.</p>
-                    <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+
+                    <div class="form-group">
                         <label>Email</label>
-                        <input type="text" name="username" class="form-control">                    
+                        <input 
+                            type="text" 
+                            name="username" 
+                            class="form-control <?php echo ($username_err) ? 'is-invalid' : ''; ?>"
+                            value="<?php echo $username; ?>"
+                        >
+                        <div class="invalid-feedback">
+                            <?php echo $username_err; ?>
+                        </div>
                     </div>
+
                     <button type="submit" class="btn btn-block btn-primary">Send Reset Link</button>
                 </form>
+
+                <div class="text-center mt-3">
+                    <a href="login.php">Back to login</a>
+                </div>
             </div>
         </div>
     </div>
