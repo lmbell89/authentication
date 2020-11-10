@@ -213,9 +213,11 @@ function send_password_reset($username): void {
 
     $html_msg = "<h1>Reset Your Password</h1>
         <p>Click the button below to reset your password:</p>
-        <a href='#' style='padding: 1rem; text-decoration: none; border-radius: 10px; color: #fff; background-color: #28a745; font-weight: bold; font-family: sans-serif;'>Reset Password</a>
-        <a href='$link'>Reset Password</a>
+        <a href='$link' style='padding: 1rem; text-decoration: none; border-radius: 10px; color: #fff; background-color: #28a745; font-weight: bold; font-family: sans-serif;'>Reset Password</a>
+        <br />
+        <br />
         <p>Button not working?</p>
+        <br />
         <p>Copy the following link into your browser to reset your password:</p>
         <a href='$link'>$link</a>";
 
