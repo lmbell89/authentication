@@ -1,5 +1,5 @@
 <?php
-require_once '../config/config.test.php';
+require_once '../config/config.php';
 
 function flash(): string {
     $flash = null;

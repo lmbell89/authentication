@@ -27,7 +27,7 @@ define('SMTP_USERNAME', '');
 define('SMTP_PASSWORD', '');
 define('SMTP_ENCRYPTION', PHPMailer::ENCRYPTION_STARTTLS); // see https://github.com/PHPMailer/PHPMailer for alternatives
 define('SMTP_EXCEPTIONS', true);
-define('SMTP_DEFAULT_ADDRESS', 'info@liambell.info');
+define('SMTP_DEFAULT_ADDRESS', '');
 define('SMTP_DEFAULT_NAME', null);
 
 $mail = new PHPMailer(SMTP_EXCEPTIONS);
